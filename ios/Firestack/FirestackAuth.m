@@ -111,6 +111,46 @@ RCT_EXPORT_METHOD(signInWithProvider:
     }
 }
 
+RCT_EXPORT_METHOD(linkProvider:
+                  (NSString *)provider
+                  token:(NSString *)authToken
+                  secret:(NSString *)authTokenSecret
+                  callback:(RCTResponseSenderBlock)callback)
+{
+    FIRAuthCredential *credential = [self getCredentialForProvider:provider
+                                                             token:authToken
+                                                            secret:authTokenSecret];
+    if (credential == nil) {
+        NSDictionary *err = @{
+                              @"error": @"Unhandled provider"
+                              };
+        return callback(@[err]);
+    }
+
+    @try {
+          FIRUser *user = [FIRAuth auth].currentUser;
+        [user linkWithCredential:credential
+                                  completion:^(FIRUser *user, NSError *error) {
+                                      if (user != nil) {
+                                          // User is signed in.
+                                          NSDictionary *userProps = [self userPropsFromFIRUser:user];
+                                          callback(@[[NSNull null], userProps]);
+                                      } else {
+                                          NSLog(@"An error occurred: %@", [error localizedDescription]);
+                                          // No user is signed in.
+                                          NSDictionary *err = @{
+                                                                @"error": @"No user linked",
+                                                                @"description": [error localizedDescription]
+                                                                };
+                                          callback(@[err]);
+                                      }
+                                  }];
+    } @catch (NSException *exception) {
+        [FirestackErrors handleException:exception
+                            withCallback:callback];
+    }
+}
+
 RCT_EXPORT_METHOD(signOut:(RCTResponseSenderBlock)callback)
 {
     NSError *error;
