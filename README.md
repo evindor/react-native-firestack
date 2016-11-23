@@ -359,6 +359,19 @@ We can use an external authentication provider, such as twitter/facebook for aut
 
 > By using a separate library, we can keep our dependencies a little lower and the size of the application down.
 
+#### linkProvider()
+
+Link an existing user with a third-party authentication provider.
+```javascript
+firestack.auth.linkProvider('facebook', token, '')
+  .then((user) => {
+    console.log(user);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+```
+
 ### OAuth setup with library
 
 [Currently undergoing updates]
